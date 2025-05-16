@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+    <contextName>delay-task-core</contextName>
+
+    <springProperty scope="context" name="spring.application.name" source="spring.application.name"/>
+    <springProperty scope="context" name="spring.profiles.active" source="spring.profiles.active"/>
+    <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
+
+    <property scope="context" name="CHARSET" value="utf-8"/>
+
+    <property scope="context" name="appName" value="${spring.application.name}"/>
+    <property scope="context" name="active" value="${spring.profiles.active}"/>
+    <property scope="context" name="LOG_HOME" value="${logging.file.path}"/>
+    <property scope="context" name="APP_LOG_HOME" value="${LOG_HOME}/${appName}"/>
+    <property scope="context" name="ERR_LOG_HOME" value="${LOG_HOME}/${appName}/err"/>
+
+    <property scope="context" name="APP_PATTERN" value='%-5p %d [%t] [%X{TRACE_ID}] %c{50}:%L> %m%n'/>
+    <property scope="context" name="ERR_PATTERN" value='${APP_PATTERN}'/>
+
+    <appender name="ERR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <file>${ERR_LOG_HOME}/${appName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${ERR_LOG_HOME}/err.${HOSTNAME}.%d{yyyy-MM-dd}.log.%i.zip</fileNamePattern>
+            <MaxHistory>100</MaxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>30MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${CHARSET}</charset>
+            <pattern>${ERR_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${APP_LOG_HOME}/${appName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_HOME}/${appName}.%d{yyyy-MM-dd_HH}.log.%i
+            </fileNamePattern>
+            <MaxHistory>3000</MaxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${CHARSET}</charset>
+            <pattern>${APP_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="ASYNC_APP_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>512</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="APP_FILE"/>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${CHARSET}</charset>
+            <pattern>${APP_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+<!--        <appender-ref ref="ASYNC_APP_FILE"/>-->
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
