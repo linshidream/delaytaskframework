@@ -1,0 +1,23 @@
+server:
+  port: 7002
+
+spring:
+  application:
+    name: delay-task-admin
+  redis:
+    host: 127.0.0.1
+    database: 2
+    port: 6379
+    password: 123456
+    lettuce:
+      pool:
+        min-idle: 2
+        max-idle: 4
+        max-active: 10
+        max-wait: -1
+        time-between-eviction-runs: 1
+
+logging:
+  file:
+    path: ./log
+
